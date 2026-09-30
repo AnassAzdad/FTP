@@ -5,34 +5,27 @@ import { getMe } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "FTP Stats",
-  description: "Federation of TPS: player and team stats for the New Era league",
+  description: "Federation of TPS: player and team statistics for the New Era league",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const me = await getMe();
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;500;600;700&display=swap"
-        />
-      </head>
       <body>
         <header className="topbar">
           <div className="topbar-inner">
             <Link href="/" className="brand">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Federation of TPS" />
-              <span><b>FTP STATS</b><small>Federation of TPS · New Era</small></span>
+              <img src="/logo.png" alt="" />
+              Federation of TPS
             </Link>
             <nav className="links">
+              <Link href="/">Overview</Link>
+              <Link href="/matches">Matches</Link>
+              <Link href="/standings">Table</Link>
               <Link href="/players">Players</Link>
               <Link href="/teams">Teams</Link>
-              <Link href="/standings">Standings</Link>
-              <Link href="/matches">Matches</Link>
               <Link href="/awards">Awards</Link>
               <Link href="/compare">Compare</Link>
             </nav>
@@ -43,16 +36,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <form action="/api/auth/logout" method="post"><button className="btn ghost">Log out</button></form>
               </div>
             ) : (
-              <a className="btn discord" href="/api/auth/discord">Login with Discord</a>
+              <a className="btn discord" href="/api/auth/discord">Log in with Discord</a>
             )}
           </div>
         </header>
         <main>{children}</main>
-        <footer>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" />
-          Federation of TPS · New Era. Stats update automatically after every match.
-        </footer>
+        <footer>Federation of TPS · New Era. Statistics are recorded automatically at the end of every match.</footer>
       </body>
     </html>
   );
