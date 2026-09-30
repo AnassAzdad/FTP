@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Crest, Form, Leaderboard, MatchList, Panel, SeasonPicker } from "@/components/Ui";
 import { METRICS, formGuide, getSeasons, leaderboard, recentMatches, resolveSeason, siteTotals, standings, type MetricKey } from "@/lib/stats";
+import { listFixtures } from "@/lib/fixtures";
+import { FixtureList } from "@/components/FixtureList";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +13,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const [seasons, season] = await Promise.all([getSeasons(), resolveSeason(sp.season)]);
   const sid = season?.id ?? null;
   const q = sid ? `?season=${sid}` : "";
-  const [table, form, matches, totals, ...boards] = await Promise.all([
-    standings(sid), formGuide(sid), recentMatches(sid, 6), siteTotals(sid),
+  const [table, form, matches, totals, upcoming, ...boards] = await Promise.all([
+    standings(sid), formGuide(sid), recentMatches(sid, 6), siteTotals(sid), listFixtures(sid, { upcoming: true, limit: 6 }),
     ...TOP.map((k) => leaderboard(k, sid, 5)),
   ]);
 
@@ -52,6 +54,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               </tbody>
             </table>
           </Panel>
+          {upcoming.length > 0 && <FixtureList title="Upcoming fixtures" more={`/fixtures${q}`} fixtures={upcoming} />}
           <MatchList title="Latest results" more={`/matches${q}`} matches={matches} />
         </div>
         <div className="stack">

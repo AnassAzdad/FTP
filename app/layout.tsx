@@ -22,7 +22,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             <nav className="links">
               <Link href="/">Overview</Link>
-              <Link href="/matches">Matches</Link>
+              <Link href="/fixtures">Fixtures</Link>
+              <Link href="/matches">Results</Link>
               <Link href="/standings">Table</Link>
               <Link href="/players">Players</Link>
               <Link href="/teams">Teams</Link>

@@ -93,3 +93,25 @@ create table if not exists match_events (
   related_player_id  int references players(id)
 );
 create index if not exists events_match_idx on match_events(match_id);
+
+-- Scheduled matches, mostly imported from the Discord fixtures channel.
+create table if not exists fixtures (
+  id            serial primary key,
+  season_id     int references seasons(id),
+  competition   text not null default 'League',
+  home_team_id  int not null references teams(id),
+  away_team_id  int not null references teams(id),
+  kickoff       timestamptz not null,
+  source        text not null default 'manual',   -- 'discord' | 'manual'
+  source_id     text unique,                      -- discord: "<message id>:<line>"
+  source_text   text,                             -- the line it was parsed from
+  match_id      int references matches(id) on delete set null,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create index if not exists fixtures_kickoff_idx on fixtures(kickoff);
+
+create table if not exists sync_state (
+  key   text primary key,
+  value text not null
+);
