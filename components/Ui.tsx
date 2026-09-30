@@ -28,8 +28,8 @@ export function Leaderboard({
         <thead><tr><th>#</th><th>Player</th><th className="num">Apps</th><th className="num">{unit}</th></tr></thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.id}>
-              <td>{i + 1}</td>
+            <tr key={r.id} className={i === 0 ? "first" : undefined}>
+              <td className="rank">{i + 1}</td>
               <td>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                   <Avatar robloxId={r.roblox_id} name={r.username} />
@@ -49,11 +49,11 @@ export function Leaderboard({
 
 export function Form({ results }: { results?: string[] }) {
   if (!results?.length) return <span className="muted">—</span>;
-  const color = { W: "var(--accent)", D: "var(--warn)", L: "var(--red)" } as Record<string, string>;
+  const color = { W: "var(--good)", D: "var(--warn)", L: "var(--bad)" } as Record<string, string>;
   return (
     <span style={{ display: "inline-flex", gap: 3 }}>
       {results.map((r, i) => (
-        <span key={i} title={r} style={{ width: 20, height: 20, borderRadius: 4, background: color[r], color: "#000",
+        <span key={i} title={r} style={{ width: 20, height: 20, borderRadius: 4, background: color[r], color: "var(--accent-ink)",
           fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{r}</span>
       ))}
     </span>

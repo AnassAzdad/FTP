@@ -6,8 +6,8 @@ import { METRICS, bestByGroup, getSeasons, leaderboard, resolveSeason, type Metr
 export const dynamic = "force-dynamic";
 
 const AWARDS: [string, MetricKey][] = [
-  ["🥇 Golden Boot", "goals"], ["🎯 Playmaker", "assists"], ["🧤 Golden Glove", "clean_sheets"],
-  ["⭐ Player of the Season", "rating"], ["🏅 Most MOTMs", "motm"], ["🛡️ Iron Wall", "tackles_won"],
+  ["Golden Boot", "goals"], ["Playmaker", "assists"], ["Golden Glove", "clean_sheets"],
+  ["Player of the Season", "rating"], ["Most MOTMs", "motm"], ["Iron Wall", "tackles_won"],
 ];
 
 export default async function Awards({ searchParams }: { searchParams: Promise<{ season?: string }> }) {
@@ -46,7 +46,7 @@ export default async function Awards({ searchParams }: { searchParams: Promise<{
         })}
       </div>
       <h2>Team of the Season <span className="muted">(4-3-3, best average rating, min 3 apps)</span></h2>
-      <div className="card" style={{ display: "grid", gap: 18, padding: 24, background: "linear-gradient(#14351f,#0f2a19)" }}>
+      <div className="pitch">
         {lines.map((line, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-evenly", flexWrap: "wrap", gap: 12 }}>
             {line.map((p) => (

@@ -16,16 +16,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <>
-      <h1>{season?.name ?? "FTP"} <span className="muted">leaders</span></h1>
-      <SeasonPicker seasons={seasons} current={season} base="/" />
-      {totals && (
-        <div className="stats" style={{ margin: "16px 0" }}>
-          <div className="stat"><b>{totals.matches}</b><span>Matches played</span></div>
-          <div className="stat"><b>{totals.goals}</b><span>Goals scored</span></div>
-          <div className="stat"><b>{totals.matches ? (totals.goals / totals.matches).toFixed(2) : "0"}</b><span>Goals per match</span></div>
-          <div className="stat"><b>{totals.players}</b><span>Players</span></div>
+      <section className="hero">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Federation of TPS crest" />
+        <div>
+          <h1>Federation of TPS</h1>
+          <p>New Era · {season?.name ?? "No season yet"} stats, updated after every match</p>
+          {totals && (
+            <div className="stats">
+              <div className="stat"><b>{totals.matches}</b><span>Matches played</span></div>
+              <div className="stat"><b>{totals.goals}</b><span>Goals scored</span></div>
+              <div className="stat"><b>{totals.matches ? (totals.goals / totals.matches).toFixed(2) : "0"}</b><span>Goals per match</span></div>
+              <div className="stat"><b>{totals.players}</b><span>Players</span></div>
+            </div>
+          )}
         </div>
-      )}
+      </section>
+      <SeasonPicker seasons={seasons} current={season} base="/" />
       <div className="grid">
         {HOME.map((k, i) => (
           <Leaderboard key={k} title={METRICS[k].title} unit={METRICS[k].unit} rows={boards[i]}

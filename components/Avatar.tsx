@@ -22,6 +22,6 @@ export function Avatar({ robloxId, name, size = 32 }: { robloxId: string | numbe
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img ref={ref} src={`/api/avatar/${robloxId}`} alt="" width={size} height={size}
+  return <img ref={ref} src={`/api/avatar/${robloxId}`} alt="" data-name={name} width={size} height={size}
     style={{ ...style, background: "var(--line)" }} onError={() => setFailed(true)} />;
 }

@@ -14,7 +14,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <h1>Login</h1>
       {error && <div className="card error" style={{ margin: "12px 0" }}>{MESSAGES[error] ?? "Login failed. Please try again."}</div>}
       <p className="muted">Log in with Discord to verify your Roblox account and claim your player profile.</p>
-      <a className="btn" href="/api/auth/discord">Login with Discord</a>
+      <a className="btn discord" href="/api/auth/discord">Login with Discord</a>
     </>
   );
 }
