@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SeasonPicker } from "@/components/Ui";
+import { Avatar } from "@/components/Avatar";
 import { getSeasons, playerProfile, resolveSeason } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
@@ -28,13 +29,17 @@ export default async function PlayerPage({ params, searchParams }: {
 
   return (
     <>
-      <h1>{p.username}{p.verified_at && <span className="badge">✓ verified</span>}</h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <Avatar robloxId={p.roblox_id} name={p.username} size={72} />
+        <h1 style={{ margin: 0 }}>{p.username}{p.verified_at && <span className="badge">✓ verified</span>}</h1>
+      </div>
       <p className="muted">
         {p.display_name && <>{p.display_name} · </>}
         {p.team_name ? <Link href={`/teams/${p.team_id}`}>{p.team_name}</Link> : "Free agent"}
         {p.position && <> · {p.position}</>}
         {p.discord_name && <> · Discord: {p.discord_name}</>}
       </p>
+      <p><Link href={`/compare?a=${encodeURIComponent(p.username)}`} className="pill">Compare with another player →</Link></p>
       <SeasonPicker seasons={seasons} current={season} base={`/players/${id}`} />
       <div className="stats" style={{ marginBottom: 16 }}>
         <div className="stat"><b>{t.apps}</b><span>Appearances</span></div>

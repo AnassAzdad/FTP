@@ -16,6 +16,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Link href="/teams">Teams</Link>
           <Link href="/standings">Standings</Link>
           <Link href="/matches">Matches</Link>
+          <Link href="/awards">Awards</Link>
+          <Link href="/compare">Compare</Link>
           <span className="spacer" />
           {me ? (
             <>

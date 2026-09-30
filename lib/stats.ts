@@ -36,7 +36,7 @@ export const METRICS = {
 export type MetricKey = keyof typeof METRICS;
 
 export type LeaderRow = {
-  id: number; username: string; team: string | null; apps: number; value: number;
+  id: number; roblox_id: string; username: string; team: string | null; apps: number; value: number;
 };
 
 export async function leaderboard(
@@ -47,7 +47,7 @@ export async function leaderboard(
   const m = METRICS[metric];
   const having = "having" in m ? m.having : "true";
   return query<LeaderRow>(
-    `select p.id, p.username, t.name as team,
+    `select p.id, p.roblox_id::text as roblox_id, p.username, t.name as team,
             (count(*) filter (where s.minutes > 0))::int as apps,
             (${m.expr})::float as value
        from player_match_stats s
@@ -61,6 +61,73 @@ export async function leaderboard(
       limit $2`,
     [seasonId, limit],
   ).then((rows) => rows.filter((r) => r.value > 0));
+}
+
+export async function siteTotals(seasonId: number | null) {
+  return queryOne<{ matches: number; goals: number; players: number; teams: number }>(
+    `select count(*)::int as matches,
+            coalesce(sum(home_score + away_score),0)::int as goals,
+            (select count(distinct s.player_id)::int from player_match_stats s join matches m2 on m2.id = s.match_id
+              where $1::int is null or m2.season_id = $1) as players,
+            (select count(*)::int from teams) as teams
+       from matches where $1::int is null or season_id = $1`,
+    [seasonId],
+  );
+}
+
+/** Last 5 results per team, oldest -> newest, as 'W' | 'D' | 'L'. */
+export async function formGuide(seasonId: number | null): Promise<Record<number, string[]>> {
+  const rows = await query<{ team_id: number; res: string }>(
+    `with r as (
+       select home_team_id as team_id, played_at, case when home_score > away_score then 'W' when home_score = away_score then 'D' else 'L' end as res
+         from matches where $1::int is null or season_id = $1
+       union all
+       select away_team_id, played_at, case when away_score > home_score then 'W' when home_score = away_score then 'D' else 'L' end
+         from matches where $1::int is null or season_id = $1),
+     ranked as (select *, row_number() over (partition by team_id order by played_at desc) as rn from r)
+     select team_id, res from ranked where rn <= 5 order by team_id, rn desc`,
+    [seasonId],
+  );
+  const out: Record<number, string[]> = {};
+  for (const r of rows) (out[r.team_id] ??= []).push(r.res);
+  return out;
+}
+
+export const POSITION_GROUPS = {
+  GK: ["GK"],
+  DEF: ["CB", "LB", "RB", "LWB", "RWB"],
+  MID: ["CM", "CDM", "CAM"],
+  ATT: ["LW", "RW", "ST"],
+} as const;
+
+/** Best average-rated players per position group (min 3 appearances). */
+export async function bestByGroup(seasonId: number | null, group: keyof typeof POSITION_GROUPS, limit: number) {
+  return query<{ id: number; roblox_id: string; username: string; team: string | null; position: string | null; apps: number; rating: number }>(
+    `select p.id, p.roblox_id::text as roblox_id, p.username, t.name as team, p.position,
+            count(*)::int as apps, round(avg(s.rating), 2)::float as rating
+       from player_match_stats s
+       join players p on p.id = s.player_id
+       join matches m on m.id = s.match_id
+       left join teams t on t.id = p.team_id
+      where s.minutes > 0 and p.position = any($3::text[]) and ($1::int is null or m.season_id = $1)
+      group by p.id, t.name
+     having count(*) >= 3
+      order by rating desc, apps desc limit $2`,
+    [seasonId, limit, [...POSITION_GROUPS[group]]],
+  );
+}
+
+export async function findPlayerByName(name: string) {
+  const n = name.trim();
+  if (!n) return null;
+  return queryOne<{ id: number }>(
+    `select id from players where lower(username) = lower($1) order by id limit 1`,
+    [n],
+  );
+}
+
+export async function allUsernames(): Promise<string[]> {
+  return (await query<{ username: string }>("select username from players order by username")).map((r) => r.username);
 }
 
 export async function playerList(seasonId: number | null, search?: string) {

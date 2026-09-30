@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Season } from "@/lib/stats";
+import { Avatar } from "./Avatar";
 
 export function SeasonPicker({ seasons, current, base }: { seasons: Season[]; current: Season | null; base: string }) {
   if (seasons.length < 2) return null;
@@ -18,7 +19,7 @@ export function Leaderboard({
   title, unit, rows, href,
 }: {
   title: string; unit: string; href?: string;
-  rows: { id: number; username: string; team: string | null; apps: number; value: number }[];
+  rows: { id: number; roblox_id: string; username: string; team: string | null; apps: number; value: number }[];
 }) {
   return (
     <div className="card">
@@ -29,7 +30,12 @@ export function Leaderboard({
           {rows.map((r, i) => (
             <tr key={r.id}>
               <td>{i + 1}</td>
-              <td><Link href={`/players/${r.id}`}>{r.username}</Link><div className="muted" style={{ fontSize: 12 }}>{r.team ?? "Free agent"}</div></td>
+              <td>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <Avatar robloxId={r.roblox_id} name={r.username} />
+                  <div><Link href={`/players/${r.id}`}>{r.username}</Link><div className="muted" style={{ fontSize: 12 }}>{r.team ?? "Free agent"}</div></div>
+                </div>
+              </td>
               <td className="num">{r.apps}</td>
               <td className="num"><b>{r.value}</b></td>
             </tr>
@@ -38,6 +44,19 @@ export function Leaderboard({
         </tbody>
       </table>
     </div>
+  );
+}
+
+export function Form({ results }: { results?: string[] }) {
+  if (!results?.length) return <span className="muted">—</span>;
+  const color = { W: "var(--accent)", D: "var(--warn)", L: "var(--red)" } as Record<string, string>;
+  return (
+    <span style={{ display: "inline-flex", gap: 3 }}>
+      {results.map((r, i) => (
+        <span key={i} title={r} style={{ width: 20, height: 20, borderRadius: 4, background: color[r], color: "#000",
+          fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{r}</span>
+      ))}
+    </span>
   );
 }
 
