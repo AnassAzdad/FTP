@@ -1,8 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function Avatar({ robloxId, name, size = 32 }: { robloxId: string | number; name: string; size?: number }) {
   const [failed, setFailed] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+
+  // The <img> is server-rendered, so it can fail before React attaches onError.
+  // After hydration, catch images that already finished loading with no pixels.
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+  }, []);
+
   const style = { width: size, height: size, borderRadius: "50%", flex: "none" as const };
   if (failed) {
     return (
@@ -13,6 +22,6 @@ export function Avatar({ robloxId, name, size = 32 }: { robloxId: string | numbe
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/api/avatar/${robloxId}`} alt="" width={size} height={size} loading="lazy"
+  return <img ref={ref} src={`/api/avatar/${robloxId}`} alt="" width={size} height={size}
     style={{ ...style, background: "var(--line)" }} onError={() => setFailed(true)} />;
 }
