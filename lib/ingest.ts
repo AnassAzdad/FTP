@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { PoolClient } from "pg";
 import { pool } from "./db";
 import { computeRating } from "./rating";
+import { linkResultToFixture } from "./fixtures";
 
 const n = z.number().int().nonnegative().default(0);
 
@@ -115,6 +116,7 @@ export async function ingestMatch(payload: MatchPayload) {
        payload.home.score, payload.away.score, payload.playedAt ?? null],
     );
     const matchId = match.rows[0].id as number;
+    await linkResultToFixture(c, matchId, homeId, awayId, payload.playedAt ? new Date(payload.playedAt) : null);
 
     const idByRoblox = new Map<string, number>();
     let best: { id: number; rating: number } | null = null;

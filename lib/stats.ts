@@ -36,7 +36,7 @@ export const METRICS = {
 export type MetricKey = keyof typeof METRICS;
 
 export type LeaderRow = {
-  id: number; username: string; team: string | null; apps: number; value: number;
+  id: number; roblox_id: string; username: string; team: string | null; apps: number; value: number;
 };
 
 export async function leaderboard(
@@ -47,7 +47,7 @@ export async function leaderboard(
   const m = METRICS[metric];
   const having = "having" in m ? m.having : "true";
   return query<LeaderRow>(
-    `select p.id, p.username, t.name as team,
+    `select p.id, p.roblox_id::text as roblox_id, p.username, t.name as team,
             (count(*) filter (where s.minutes > 0))::int as apps,
             (${m.expr})::float as value
        from player_match_stats s
@@ -63,9 +63,76 @@ export async function leaderboard(
   ).then((rows) => rows.filter((r) => r.value > 0));
 }
 
+export async function siteTotals(seasonId: number | null) {
+  return queryOne<{ matches: number; goals: number; players: number; teams: number }>(
+    `select count(*)::int as matches,
+            coalesce(sum(home_score + away_score),0)::int as goals,
+            (select count(distinct s.player_id)::int from player_match_stats s join matches m2 on m2.id = s.match_id
+              where $1::int is null or m2.season_id = $1) as players,
+            (select count(*)::int from teams) as teams
+       from matches where $1::int is null or season_id = $1`,
+    [seasonId],
+  );
+}
+
+/** Last 5 results per team, oldest -> newest, as 'W' | 'D' | 'L'. */
+export async function formGuide(seasonId: number | null): Promise<Record<number, string[]>> {
+  const rows = await query<{ team_id: number; res: string }>(
+    `with r as (
+       select home_team_id as team_id, played_at, case when home_score > away_score then 'W' when home_score = away_score then 'D' else 'L' end as res
+         from matches where $1::int is null or season_id = $1
+       union all
+       select away_team_id, played_at, case when away_score > home_score then 'W' when home_score = away_score then 'D' else 'L' end
+         from matches where $1::int is null or season_id = $1),
+     ranked as (select *, row_number() over (partition by team_id order by played_at desc) as rn from r)
+     select team_id, res from ranked where rn <= 5 order by team_id, rn desc`,
+    [seasonId],
+  );
+  const out: Record<number, string[]> = {};
+  for (const r of rows) (out[r.team_id] ??= []).push(r.res);
+  return out;
+}
+
+export const POSITION_GROUPS = {
+  GK: ["GK"],
+  DEF: ["CB", "LB", "RB", "LWB", "RWB"],
+  MID: ["CM", "CDM", "CAM"],
+  ATT: ["LW", "RW", "ST"],
+} as const;
+
+/** Best average-rated players per position group (min 3 appearances). */
+export async function bestByGroup(seasonId: number | null, group: keyof typeof POSITION_GROUPS, limit: number) {
+  return query<{ id: number; roblox_id: string; username: string; team: string | null; position: string | null; apps: number; rating: number }>(
+    `select p.id, p.roblox_id::text as roblox_id, p.username, t.name as team, p.position,
+            count(*)::int as apps, round(avg(s.rating), 2)::float as rating
+       from player_match_stats s
+       join players p on p.id = s.player_id
+       join matches m on m.id = s.match_id
+       left join teams t on t.id = p.team_id
+      where s.minutes > 0 and p.position = any($3::text[]) and ($1::int is null or m.season_id = $1)
+      group by p.id, t.name
+     having count(*) >= 3
+      order by rating desc, apps desc limit $2`,
+    [seasonId, limit, [...POSITION_GROUPS[group]]],
+  );
+}
+
+export async function findPlayerByName(name: string) {
+  const n = name.trim();
+  if (!n) return null;
+  return queryOne<{ id: number }>(
+    `select id from players where lower(username) = lower($1) order by id limit 1`,
+    [n],
+  );
+}
+
+export async function allUsernames(): Promise<string[]> {
+  return (await query<{ username: string }>("select username from players order by username")).map((r) => r.username);
+}
+
 export async function playerList(seasonId: number | null, search?: string) {
   return query(
-    `select p.id, p.username, p.display_name, p.position, p.verified_at, t.name as team,
+    `select p.id, p.roblox_id::text as roblox_id, p.username, p.display_name, p.position, p.verified_at, t.name as team,
             count(s.*) filter (where s.minutes > 0)::int as apps,
             coalesce(sum(s.goals),0)::int as goals,
             coalesce(sum(s.assists),0)::int as assists,
@@ -170,7 +237,9 @@ export async function standings(seasonId: number | null) {
 export async function recentMatches(seasonId: number | null, limit = 30, teamId?: number) {
   return query(
     `select m.id, m.played_at, m.competition, m.home_score, m.away_score,
-            ht.name as home, at.name as away, mp.username as mvp
+            ht.name as home, ht.color as home_color, ht.short_name as home_short,
+            at.name as away, at.color as away_color, at.short_name as away_short,
+            mp.username as mvp
        from matches m
        join teams ht on ht.id = m.home_team_id
        join teams at on at.id = m.away_team_id
@@ -184,7 +253,9 @@ export async function recentMatches(seasonId: number | null, limit = 30, teamId?
 
 export async function matchDetail(id: number) {
   const match = await queryOne(
-    `select m.*, ht.name as home, at.name as away, mp.username as mvp, s.name as season
+    `select m.*, ht.name as home, ht.color as home_color, ht.short_name as home_short,
+            at.name as away, at.color as away_color, at.short_name as away_short,
+            mp.username as mvp, mp.id as mvp_id, s.name as season
        from matches m
        join teams ht on ht.id = m.home_team_id
        join teams at on at.id = m.away_team_id
@@ -195,7 +266,7 @@ export async function matchDetail(id: number) {
   );
   if (!match) return null;
   const players = await query(
-    `select s.*, p.username from player_match_stats s
+    `select s.*, p.username, p.roblox_id::text as roblox_id from player_match_stats s
        join players p on p.id = s.player_id where s.match_id = $1
       order by s.rating desc`,
     [id],
@@ -219,7 +290,7 @@ export async function teamRoster(teamId: number, seasonId: number | null) {
   const team = await queryOne("select * from teams where id = $1", [teamId]);
   if (!team) return null;
   const roster = await query(
-    `select p.id, p.username, p.position, p.verified_at,
+    `select p.id, p.roblox_id::text as roblox_id, p.username, p.position, p.verified_at,
             count(s.*) filter (where s.minutes > 0 and m.id is not null)::int as apps,
             coalesce(sum(s.goals) filter (where m.id is not null),0)::int as goals,
             coalesce(sum(s.assists) filter (where m.id is not null),0)::int as assists,

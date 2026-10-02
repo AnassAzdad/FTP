@@ -9,7 +9,8 @@ export default async function Matches({ searchParams }: { searchParams: Promise<
   const matches = await recentMatches(season?.id ?? null, 200);
   return (
     <>
-      <h1>Matches</h1>
+      <h1>Results</h1>
+      <p className="muted" style={{ margin: "0 0 12px" }}>{matches.length} matches · {season?.name}</p>
       <SeasonPicker seasons={seasons} current={season} base="/matches" />
       <MatchList matches={matches} />
     </>

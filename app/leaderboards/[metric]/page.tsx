@@ -16,7 +16,7 @@ export default async function Page({ params, searchParams }: {
   return (
     <>
       <h1>{m.title}</h1>
-      <p className="muted">{season?.name}</p>
+      <p className="muted" style={{ margin: "0 0 12px" }}>{season?.name}{metric === "rating" && " · minimum 3 appearances"}</p>
       <SeasonPicker seasons={seasons} current={season} base={`/leaderboards/${metric}`} />
       <Leaderboard title={m.title} unit={m.unit} rows={rows} />
     </>
