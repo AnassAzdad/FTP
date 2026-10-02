@@ -155,3 +155,38 @@ div.fixture:hover { background: transparent; }
 .form { display: flex; gap: 8px; flex-wrap: wrap; }
 .form input { background: var(--surface); border: 1px solid var(--line); color: var(--text); padding: 7px 10px; border-radius: 4px; font: inherit; min-width: 180px; }
 .notice { background: var(--surface); border: 1px solid var(--bad); border-radius: 6px; padding: 12px 14px; margin: 12px 0; }
+
+/* Page frame: content is centred, the hero band spans the full width */
+main.page { max-width: none; padding: 20px 16px 56px; }
+main.page > * { max-width: 1100px; margin-left: auto; margin-right: auto; }
+main.page > .hero { max-width: none; margin: -20px -16px 0; }
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.btn.ghost-dark { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
+
+/* Hero band */
+.hero { background: var(--bar); color: #fff; border-top: 1px solid rgba(255, 255, 255, .08); }
+.hero-inner { max-width: 1100px; margin: 0 auto; padding: 30px 16px 32px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.hero img { width: 76px; height: 76px; }
+.hero h1 { font-size: 28px; margin: 0; color: #fff; }
+.hero p { margin: 4px 0 0; color: rgba(255, 255, 255, .7); font-size: 15px; }
+.hero-stats { display: flex; gap: 32px; margin: 0 0 0 auto; padding-left: 20px; }
+.hero-stats div { display: flex; flex-direction: column-reverse; }
+.hero-stats dt { color: rgba(255, 255, 255, .6); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; }
+.hero-stats dd { margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .hero-stats { margin-left: 0; padding-left: 0; gap: 22px; width: 100%; } .hero img { width: 60px; height: 60px; } }
+
+/* Sections */
+.section { margin-top: 28px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.section-head h2 { font-size: 16px; }
+.section-head a { color: var(--accent); font-size: 13px; font-weight: 600; }
+.content > .tabs { margin-top: 18px; }
+
+/* Fixture cards */
+.strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity; }
+.fx-card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; scroll-snap-align: start; min-width: 0; }
+a.fx-card:hover { text-decoration: none; border-color: var(--accent); }
+.fx-top { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+.fx-row { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.fx-row .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fx-row b { font-variant-numeric: tabular-nums; }

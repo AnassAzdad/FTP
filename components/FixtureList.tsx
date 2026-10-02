@@ -37,3 +37,32 @@ export function FixtureList({ fixtures, title, more }: { fixtures: any[]; title?
     </Panel>
   );
 }
+
+export type StripItem = {
+  key: string; when: string; competition: string; href?: string;
+  home: string; away: string; home_color?: string | null; away_color?: string | null; home_short?: string | null; away_short?: string | null;
+  home_score?: number; away_score?: number;
+};
+
+const shortDay = (d: string) => new Intl.DateTimeFormat("en-GB", { timeZone: tz(), weekday: "short", day: "numeric", month: "short" }).format(new Date(d));
+
+/** Horizontal row of fixture/result cards for the overview. */
+export function FixtureStrip({ items }: { items: StripItem[] }) {
+  return (
+    <div className="strip">
+      {items.map((it) => {
+        const played = it.home_score !== undefined;
+        const body = (
+          <>
+            <div className="fx-top"><span>{shortDay(it.when)}{played ? "" : ` · ${timeOf(it.when)}`}</span><span>{it.competition}</span></div>
+            <div className="fx-row"><Crest name={it.home} color={it.home_color} short={it.home_short} /><span className="n">{it.home}</span>{played && <b>{it.home_score}</b>}</div>
+            <div className="fx-row"><Crest name={it.away} color={it.away_color} short={it.away_short} /><span className="n">{it.away}</span>{played && <b>{it.away_score}</b>}</div>
+          </>
+        );
+        return it.href
+          ? <Link key={it.key} href={it.href} className="fx-card">{body}</Link>
+          : <div key={it.key} className="fx-card">{body}</div>;
+      })}
+    </div>
+  );
+}

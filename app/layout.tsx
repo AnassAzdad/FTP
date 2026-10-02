@@ -21,14 +21,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Federation of TPS
             </Link>
             <nav className="links">
-              <Link href="/">Overview</Link>
               <Link href="/fixtures">Fixtures</Link>
               <Link href="/matches">Results</Link>
               <Link href="/standings">Table</Link>
+              <Link href="/stats">Stats</Link>
               <Link href="/players">Players</Link>
               <Link href="/teams">Teams</Link>
               <Link href="/awards">Awards</Link>
-              <Link href="/compare">Compare</Link>
             </nav>
             <span className="spacer" />
             {me ? (
@@ -41,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             )}
           </div>
         </header>
-        <main>{children}</main>
+        <main className="page">{children}</main>
         <footer>Federation of TPS · New Era. Statistics are recorded automatically at the end of every match.</footer>
       </body>
     </html>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Panel, PlayerCell, Rating, SeasonPicker } from "@/components/Ui";
 import { getSeasons, playerList, resolveSeason } from "@/lib/stats";
 
@@ -9,8 +10,13 @@ export default async function Players({ searchParams }: { searchParams: Promise<
   const players = await playerList(season?.id ?? null, sp.q);
   return (
     <>
-      <h1>Players</h1>
-      <p className="muted" style={{ margin: "0 0 12px" }}>{players.length} players · {season?.name}</p>
+      <div className="title-row">
+        <div>
+          <h1>Players</h1>
+          <p className="muted" style={{ margin: "0 0 12px" }}>{players.length} players · {season?.name}</p>
+        </div>
+        <Link href="/compare" className="btn ghost-dark">Compare players</Link>
+      </div>
       <SeasonPicker seasons={seasons} current={season} base="/players" />
       <form className="form" style={{ marginBottom: 12 }}>
         {season && <input type="hidden" name="season" value={season.id} />}
